@@ -1,0 +1,125 @@
+<template>
+    <div class="page-wrapper user-color">
+        <slot name="header"></slot>
+        <!-- Navbar top Start-->
+        <div class="container-fluid user-bg-title">
+            <div class="user-serchbox d-flex">
+                <div class="user-title capi">
+                    <h2>{{ title }}</h2>
+                </div>
+                <div class="searchbox ml-auto">
+                    <nav class="navbar user-nav d-flex nav-mr-top">
+                        <a :href="route(link)" :active="route().current(link)" class="btn btn-primary btn-sm cls rg-top-btn"><i class="fa fa-angle-left"></i> Form Department</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <!-- Navbar top End-->
+
+        <nav aria-label="Page breadcrumb">
+            <ol class="breadcrumb padding-top">
+                <li class="breadcrumb-item" aria-current="page">Main</li>
+                <li class="breadcrumb-item">{{label}}</li>
+                <li v-show="!editMode" class="breadcrumb-item"> {{title}}</li>
+                <li v-show="editMode" class="breadcrumb-item"> {{title}}</li>
+            </ol>
+        </nav>
+
+<!--        <slot name="header"></slot>-->
+        <div class="register-form">
+            <div class="col-lg-8 offset-lg-2 from-wrapper">
+                <form>
+                    <div class="row justify-content-center">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Name <span class="text-red">*</span></label>
+                                <input class="form-control" type="text" v-model="form.name"/>
+                                <div class="text-danger" v-if="errors.name">{{ errors.name[0] }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6" v-if="$page.auth.user.user_type == 'admin'">
+                            <div class="form-group">
+                                <label>Organization<span class="text-red">*</span></label>
+                                <select class="form-control select" v-model="form.organization_id">
+                                    <option v-for="org in data.organizations" :value="org.id" :key="org.id">{{org.name}}</option>
+                                </select>
+                                 <div class="text-danger" v-if="errors.organization_id">{{ errors.organization_id[0] }}</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="m-t-20 text-center">
+                        <button
+                            type="button"
+                            class="save_role"
+                            wire:click.prevent="store()"
+                            v-show="!editMode"
+                            @click="save(form)"
+                        >
+                            Save
+                        </button>
+                        <button
+                            type="button"
+                            class="save_role"
+                            wire:click.prevent="store()"
+                            v-show="editMode"
+                            @click="update(form)"
+                        >
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</template>
+
+<script>
+import Alert from '@/Pages/Component/Alert'
+import { Datetime } from 'vue-datetime';
+import moment from "moment";
+
+export default {
+    components: {
+        Alert,
+        datetime: Datetime
+    },
+    props: ['data', 'errors', 'editMode', 'link', 'title', 'label'],
+    data () {
+        return {
+            form: {
+                id: undefined,
+                organization_id: null,
+                Package_id:null
+            }
+        }
+    },
+    created () {
+        //console.log('sazzad', this.data);
+        if (this.editMode) {
+            this.form = this.data
+        }
+    },
+    methods: {
+        onFileChange: function (e) {
+            this.photo = e.target.files[0]
+        },
+        reset: function () {
+            this.form = {}
+        },
+        save: function (params) {
+            this.$inertia.post('/form-department', params)
+        },
+        update: function (params) {
+            var data = new FormData()
+            data.append('name', params.name || '')
+            data.append('organization_id', params.organization_id || '')
+            data.append('_method', 'PUT')
+
+            this.$inertia.post('/form-department/' + params.id, data)
+        }
+    }
+}
+</script>
